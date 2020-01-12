@@ -2,7 +2,14 @@ defmodule Mgmt do
   @moduledoc """
   Documentation for Mgmt.
   """
-  def run([]), do: IO.puts("Hello, world!")
+  alias Mgmt.Commands.Hello
+  use Mgmt.Commander
 
-  def run([arg | _tail]), do: IO.puts("Hello, " <> arg)
+  name("mgmt")
+
+  description("A simple system management tool, for unix-like systems")
+
+  # default_command(Hello)
+
+  commands([Hello])
 end

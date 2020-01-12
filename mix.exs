@@ -12,7 +12,7 @@ defmodule Mgmt.MixProject do
   end
 
   def escript do
-    [main_module: Mgmt.CLI, path: "bin/mgmt"]
+    [main_module: Mgmt, path: "bin/mgmt"]
   end
 
   # Run "mix help deps" to learn about dependencies.
