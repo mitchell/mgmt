@@ -1,0 +1,3 @@
+<%= command.long_description %>
+Usage:
+  <%= command.usage %>

@@ -5,11 +5,14 @@ defmodule Mgmt do
   alias Mgmt.Commands.Hello
   use Mgmt.Commander
 
-  name("mgmt")
+  usage("mgmt <subcommand>")
 
   description("A simple system management tool, for unix-like systems")
 
-  # default_command(Hello)
+  long_description("""
+  A simple system management tool, for unix-like systems. Commands include, but are not limited to;
+  powering off, suspending, locking, killing processes, and updating packages.
+  """)
 
   commands([Hello])
 end

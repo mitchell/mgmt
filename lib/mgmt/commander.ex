@@ -1,10 +1,13 @@
 defmodule Mgmt.Commander do
+  alias Mgmt.Commander.Help
+
   defstruct name: "",
+            usage: "",
             description: "",
             long_description: "",
             global_flags: [],
-            default_command: nil,
-            commands: []
+            default_command: Help,
+            commands: [Help]
 
   defmacro __using__(_opts) do
     quote bind_quoted: [module: __MODULE__] do
@@ -29,15 +32,23 @@ defmodule Mgmt.Commander do
     end
   end
 
-  defmacro name(name) do
-    quote bind_quoted: [name: name] do
+  defmacro usage(usage) do
+    quote bind_quoted: [usage: usage] do
+      name = usage |> String.split(" ") |> List.first()
       @commander Map.put(@commander, :name, name)
+      @commander Map.put(@commander, :usage, usage)
     end
   end
 
   defmacro description(description) do
     quote bind_quoted: [description: description] do
       @commander Map.put(@commander, :description, description)
+    end
+  end
+
+  defmacro long_description(long_description) do
+    quote bind_quoted: [long_description: long_description] do
+      @commander Map.put(@commander, :long_description, long_description)
     end
   end
 
@@ -49,22 +60,23 @@ defmodule Mgmt.Commander do
 
   defmacro commands(commands) do
     quote bind_quoted: [commands: commands] do
+      commands = Map.get(@commander, :commands) ++ commands
       @commander Map.put(@commander, :commands, commands)
     end
   end
 
   def run(commander, []) do
-    commander = commander.struct
+    commander = %__MODULE__{} = commander.struct
 
-    if commander.default_command do
-      commander.default_command.run([], [])
+    if commander.default_command == Help do
+      commander.default_command.run([commander], [])
     else
-      :ok
+      commander.defualt_command.run([], [])
     end
   end
 
   def run(commander, [key | args]) do
-    commander = commander.struct
+    commander = %__MODULE__{} = commander.struct
 
     command =
       if command = Enum.find(commander.commands, &(&1.struct.key == key)) do
@@ -74,10 +86,10 @@ defmodule Mgmt.Commander do
       end
 
     args =
-      if command == commander.default_command do
-        [key | args]
-      else
-        args
+      cond do
+        command == Help -> [commander | args]
+        command == commander.default_command -> [key | args]
+        true -> args
       end
 
     if command do

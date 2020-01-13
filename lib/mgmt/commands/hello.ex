@@ -12,12 +12,12 @@ defmodule Mgmt.Commands.Hello do
   """)
 
   execute args do
-    string =
+    greeting =
       case args do
         [] -> "Hello, world!"
         [name | _tail] -> "Hello, " <> name
       end
 
-    IO.puts(string)
+    IO.puts(greeting)
   end
 end

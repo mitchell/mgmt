@@ -23,4 +23,7 @@ erl_crash.dump
 mgmt-*.tar
 
 # Ignore elixir-ls files
-.elixir_ls
+/.elixir_ls
+
+# Escript build output
+/bin

@@ -5,6 +5,7 @@ build:
 
 clean:
 	mix clean
+	rm -rf ./bin
 
 install:
 	cp ./bin/mgmt /usr/local/bin
