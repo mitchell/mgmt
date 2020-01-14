@@ -3,8 +3,6 @@ defmodule Mgmt.Commands.Hello do
 
   usage("hello [name]")
 
-  hidden(true)
-
   description("Say hello to whomever")
 
   long_description("""

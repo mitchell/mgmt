@@ -5,7 +5,7 @@ defmodule Mgmt do
   alias Mgmt.Commands.Hello
   use Mgmt.Commander
 
-  usage("mgmt <subcommand>")
+  usage("mgmt [command]")
 
   description("A simple system management tool, for unix-like systems")
 

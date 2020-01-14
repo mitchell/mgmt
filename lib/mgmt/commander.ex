@@ -40,6 +40,13 @@ defmodule Mgmt.Commander do
     end
   end
 
+  defmacro global_flag(name, type, description, shorthand: shorthand) do
+    quote bind_quoted: [name: name, type: type, description: description, shorthand: shorthand] do
+      global_flags = @command.global_flags ++ [{name, type, description, shorthand: shorthand}]
+      @command Map.put(@command, :global_flags, global_flags)
+    end
+  end
+
   defmacro description(description) do
     quote bind_quoted: [description: description] do
       @commander Map.put(@commander, :description, description)

@@ -33,6 +33,13 @@ defmodule Mgmt.Commander.Command do
     end
   end
 
+  defmacro flag(name, type, description, shorthand: shorthand) do
+    quote bind_quoted: [name: name, type: type, description: description, shorthand: shorthand] do
+      flags = @command.flags ++ [{name, type, description, shorthand: shorthand}]
+      @command Map.put(@command, :flags, flags)
+    end
+  end
+
   defmacro description(description) do
     quote bind_quoted: [description: description] do
       @command Map.put(@command, :description, description)
@@ -53,7 +60,7 @@ defmodule Mgmt.Commander.Command do
 
   defmacro execute(do: block) do
     quote bind_quoted: [block: Macro.escape(block, unquote: true)] do
-      def run(_args, _opts) do
+      def run(_args, _flags) do
         unquote(block)
       end
     end
@@ -61,15 +68,15 @@ defmodule Mgmt.Commander.Command do
 
   defmacro execute({args, _, _}, do: block) do
     quote bind_quoted: [args: args, block: Macro.escape(block, unquote: true)] do
-      def run(var!(args), _opts) do
+      def run(var!(args), _flags) do
         unquote(block)
       end
     end
   end
 
-  defmacro execute({args, _, _}, {opts, _, _}, do: block) do
-    quote bind_quoted: [args: args, opts: opts, block: Macro.escape(block, unquote: true)] do
-      def run(var!(args), var!(opts)) do
+  defmacro execute({args, _, _}, {flags, _, _}, do: block) do
+    quote bind_quoted: [args: args, flags: flags, block: Macro.escape(block, unquote: true)] do
+      def run(var!(args), var!(flags)) do
         unquote(block)
       end
     end
