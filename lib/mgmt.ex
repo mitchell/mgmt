@@ -3,7 +3,7 @@ defmodule Mgmt do
   Documentation for Mgmt.
   """
   alias Mgmt.Commands.Hello
-  use Mgmt.Commander
+  use Mgmt.Commander, [:main, :escript]
 
   usage("mgmt [command]")
 

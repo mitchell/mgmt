@@ -5,6 +5,4 @@ defmodule Mgmt.Commander.Help.Template do
     :commander,
     :commands
   ])
-
-  EEx.function_from_file(:def, :command, "lib/mgmt/commander/help/command.eex", [:command])
 end

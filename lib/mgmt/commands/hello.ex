@@ -1,5 +1,6 @@
 defmodule Mgmt.Commands.Hello do
-  use Mgmt.Commander.Command
+  use Mgmt.Commander
+  alias Mgmt.Commands.Hello.Goodbye
 
   usage("hello [name]")
 
@@ -8,6 +9,8 @@ defmodule Mgmt.Commands.Hello do
   long_description("""
   Say hello to the world, or whomever you specify as the first argument
   """)
+
+  commands([Goodbye])
 
   execute args do
     greeting =

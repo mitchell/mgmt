@@ -1,6 +1,6 @@
 <%= commander.long_description %>
 Usage:
   <%= commander.usage %>
-
+<%= if length(commands) > 0 do %>
 Commands: <%= for command <- commands do %>
-  <%= command.key %><%= command.padding %><%= command.description %><% end %>
+  <%= command.name %><%= command.padding %><%= command.description %><% end %><% end %>
