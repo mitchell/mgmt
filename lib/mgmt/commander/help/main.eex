@@ -1,6 +1,6 @@
 <%= commander.long_description %>
 Usage:
   <%= commander.usage %>
-<%= if length(commands) > 0 do %>
-Commands: <%= for command <- commands do %>
-  <%= command.name %><%= command.padding %><%= command.description %><% end %><% end %>
+<%= if commands != "" do %><%= "\n" %>Commands:<%= commands %><% end %>
+<%= if flags != "" do %><%= "\n" %>Flags:<%= flags %><% end %>
+<%= if global_flags != "" do %><%= if flags != "", do: "\n", else: "" %>Global Flags:<%= global_flags %><% end %>

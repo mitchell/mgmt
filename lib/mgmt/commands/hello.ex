@@ -12,6 +12,8 @@ defmodule Mgmt.Commands.Hello do
 
   commands([Goodbye])
 
+  flag(:foo, :boolean, "This does nothing", shorthand: :f)
+
   execute args do
     greeting =
       case args do

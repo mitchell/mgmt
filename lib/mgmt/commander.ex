@@ -6,7 +6,9 @@ defmodule Mgmt.Commander do
             description: "",
             long_description: "",
             global_flags: [],
+            global_shorthands: [],
             flags: [],
+            shorthands: [],
             hidden: false,
             default_command: nil,
             commands: []
@@ -32,7 +34,12 @@ defmodule Mgmt.Commander do
       @escript Enum.member?(opts, :escript)
 
       if @main do
-        @commander %Commander{default_command: Help, commands: [Help]}
+        @commander %Commander{
+          default_command: Help,
+          commands: [Help],
+          global_flags: [{{:help, :boolean}, "See help for a command"}],
+          global_shorthands: [h: :help]
+        }
       else
         @commander %Commander{}
       end
@@ -63,17 +70,27 @@ defmodule Mgmt.Commander do
     end
   end
 
-  defmacro global_flag(name, type, description, shorthand: shorthand) do
-    quote bind_quoted: [name: name, type: type, description: description, shorthand: shorthand] do
-      global_flags = @command.global_flags ++ [{name, type, description, shorthand: shorthand}]
-      @command Map.put(@command, :global_flags, global_flags)
+  defmacro global_flag(name, type, description, opts \\ []) do
+    quote bind_quoted: [name: name, type: type, description: description, opts: opts] do
+      global_flags = [{{name, type}, description} | @commander.global_flags]
+      @commander Map.put(@commander, :global_flags, global_flags)
+
+      if shorthand = opts[:shorthand] do
+        global_shorthands = [{shorthand, name} | @commander.global_shorthands]
+        @commander Map.put(@commander, :global_shorthands, global_shorthands)
+      end
     end
   end
 
-  defmacro flag(name, type, description, shorthand: shorthand) do
-    quote bind_quoted: [name: name, type: type, description: description, shorthand: shorthand] do
-      flags = @command.flags ++ [{name, type, description, shorthand: shorthand}]
-      @command Map.put(@command, :flags, flags)
+  defmacro flag(name, type, description, opts \\ []) do
+    quote bind_quoted: [name: name, type: type, description: description, opts: opts] do
+      flags = [{{name, type}, description} | @commander.flags]
+      @commander Map.put(@commander, :flags, flags)
+
+      if shorthand = opts[:shorthand] do
+        shorthands = [{shorthand, name} | @commander.shorthands]
+        @commander Map.put(@commander, :shorthands, shorthands)
+      end
     end
   end
 
@@ -141,32 +158,35 @@ defmodule Mgmt.Commander do
   end
 
   def run(commander, []) do
-    commander = %__MODULE__{} = commander.struct
+    struct = %__MODULE__{} = commander.struct
 
-    if commander.default_command == Help do
-      commander.default_command.run([commander], [])
+    if struct.default_command == Help do
+      struct.default_command.run([commander], [])
     else
-      commander.defualt_command.run([], [])
+      struct.defualt_command.run([], [])
     end
   end
 
-  def run(commander, [key | args]) do
-    commander = %__MODULE__{} = commander.struct
+  def run(commander, [_ | _] = args) do
+    {command, args, flags, shorthands} = select_command(commander, args, [], [])
+
+    {opts, args, _invalid} = OptionParser.parse(args, strict: flags, aliases: shorthands)
 
     {command, args} =
-      case Enum.find(commander.commands, &(&1.struct.name == key)) do
-        Help ->
-          {Help, [commander | args]}
+      cond do
+        command == Help ->
+          {command, _, _, _} = select_command(commander, args, [], [])
+          {Help, [command]}
 
-        nil ->
-          {commander.default_command, [key | args]}
+        opts[:help] ->
+          {Help, [command]}
 
-        command ->
-          select_command(command, args)
+        true ->
+          {command, args}
       end
 
     if command do
-      case command.run(args, []) do
+      case command.run(args, opts) do
         :ok ->
           :ok
 
@@ -180,13 +200,23 @@ defmodule Mgmt.Commander do
     end
   end
 
-  def select_command(command, []), do: {command, []}
+  defp select_command(command, [], flags, shorthands), do: {command, [], flags, shorthands}
 
-  def select_command(command, [key | tail] = args) do
-    if subcommand = Enum.find(command.struct.commands, &(&1.struct.name == key)) do
-      select_command(subcommand, tail)
+  defp select_command(command, [key | tail] = args, flags, shorthands) do
+    struct = %__MODULE__{} = command.struct
+    new_global_flags = for {flag, _desc} <- struct.global_flags, do: flag
+    new_flags = for {flag, _desc} <- struct.flags, do: flag
+
+    if subcommand = Enum.find(struct.commands, &(&1.struct.name == key)) do
+      select_command(
+        subcommand,
+        tail,
+        new_global_flags ++ flags,
+        shorthands ++ struct.global_shorthands
+      )
     else
-      {command, args}
+      {command, args, new_global_flags ++ new_flags ++ flags,
+       shorthands ++ struct.global_shorthands ++ struct.shorthands}
     end
   end
 end

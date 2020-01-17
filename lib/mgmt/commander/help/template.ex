@@ -3,6 +3,8 @@ defmodule Mgmt.Commander.Help.Template do
 
   EEx.function_from_file(:def, :main, "lib/mgmt/commander/help/main.eex", [
     :commander,
-    :commands
+    :commands,
+    :flags,
+    :global_flags
   ])
 end
