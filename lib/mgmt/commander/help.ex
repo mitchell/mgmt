@@ -11,14 +11,19 @@ defmodule Mgmt.Commander.Help do
   """)
 
   execute args do
-    [command] = args
-    struct = command.struct
-    commands = prep_commands(struct.commands)
+    case args do
+      [command] when is_atom(command) ->
+        struct = %Commander{} = command.struct
 
-    flags = prep_flags(struct.flags, struct.shorthands)
-    global_flags = prep_flags(struct.global_flags, struct.global_shorthands)
+        commands = prep_commands(struct.commands)
+        flags = prep_flags(struct.flags, struct.shorthands)
+        global_flags = prep_flags(struct.global_flags, struct.global_shorthands)
 
-    struct |> Template.main(commands, flags, global_flags) |> String.trim() |> IO.puts()
+        struct |> Template.main(commands, flags, global_flags) |> String.trim() |> IO.puts()
+
+      _ ->
+        {:error, "help not found for this command"}
+    end
   end
 
   defp prep_commands([]), do: ""

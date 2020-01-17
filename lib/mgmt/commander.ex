@@ -13,19 +13,7 @@ defmodule Mgmt.Commander do
             default_command: nil,
             commands: []
 
-  defmacro __using__([]) do
-    quote bind_quoted: [module: __MODULE__] do
-      alias Mgmt.Commander
-      import Commander
-
-      @commander %Commander{}
-      @before_compile module
-      @main false
-      @escript false
-    end
-  end
-
-  defmacro __using__([_ | _] = opts) do
+  defmacro __using__(opts) do
     quote bind_quoted: [opts: opts, module: __MODULE__] do
       alias Mgmt.Commander
       import Commander
@@ -174,6 +162,9 @@ defmodule Mgmt.Commander do
 
     {command, args} =
       cond do
+        command == commander ->
+          {commander.struct.default_command, args}
+
         command == Help ->
           {command, _, _, _} = select_command(commander, args, [], [])
           {Help, [command]}

@@ -7,8 +7,6 @@ defmodule Mgmt do
 
   usage("mgmt [command]")
 
-  description("A simple system management tool, for unix-like systems")
-
   long_description("""
   A simple system management tool, for unix-like systems. Commands include, but are not limited to;
   powering off, suspending, locking, killing processes, and updating packages.
