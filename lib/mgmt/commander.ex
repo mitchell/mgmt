@@ -1,5 +1,5 @@
 defmodule Mgmt.Commander do
-  alias Mgmt.Commander.Help
+  alias Mgmt.Commander.{CommanderError, Help}
 
   defstruct name: "",
             usage: "",
@@ -84,6 +84,10 @@ defmodule Mgmt.Commander do
 
   defmacro description(description) do
     quote bind_quoted: [description: description] do
+      if @main do
+        raise CommanderError, "description ignored on main commander; use long_description"
+      end
+
       @commander Map.put(@commander, :description, description)
     end
   end
@@ -97,7 +101,7 @@ defmodule Mgmt.Commander do
   defmacro default_command(default_command) do
     quote bind_quoted: [default_command: default_command] do
       if not @main do
-        raise ArgumentError, message: "cannot set default_command of non-main commander"
+        raise CommanderError, "cannot set default_command of non-main commander"
       end
 
       @commander Map.put(@commander, :default_command, default_command)
@@ -114,7 +118,7 @@ defmodule Mgmt.Commander do
   defmacro hidden(hidden) do
     quote bind_quoted: [hidden: hidden] do
       if @main do
-        raise ArgumentError, message: "cannot set main commander to be hidden"
+        raise CommanderError, "cannot set main commander to be hidden"
       end
 
       @command Map.put(@command, :hidden, hidden)
