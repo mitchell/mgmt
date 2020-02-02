@@ -9,6 +9,7 @@ clean:
 
 install:
 	cp ./bin/mgmt /usr/local/bin
+	cp ./scripts/mgmt_askpass /usr/local/bin
 
 start:
 	iex -S mix

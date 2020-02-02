@@ -20,9 +20,6 @@ defmodule Mgmt.Commander.Help do
         global_flags = prep_flags(struct.global_flags, struct.global_shorthands)
 
         struct |> Template.main(commands, flags, global_flags) |> String.trim() |> IO.puts()
-
-      _ ->
-        {:error, "help not found for this command"}
     end
   end
 

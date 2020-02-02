@@ -13,6 +13,19 @@ defmodule Mgmt.Commander do
             default_command: nil,
             commands: []
 
+  @type flag_list :: [{{name :: String.t(), type :: atom}, description :: String.t()}]
+
+  @type t :: %__MODULE__{
+          name: String.t(),
+          usage: String.t(),
+          description: String.t(),
+          long_description: String.t(),
+          global_flags: flag_list,
+          flags: flag_list,
+          shorthands: [{shorthand :: atom, name :: atom}],
+          hidden: boolean
+        }
+
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts, module: __MODULE__] do
       alias Mgmt.Commander
@@ -38,11 +51,13 @@ defmodule Mgmt.Commander do
 
   defmacro __before_compile__(_env) do
     quote do
+      @spec struct() :: Commander.t()
       def struct do
         @commander
       end
 
       if @escript do
+        @spec main(args :: [String.t()]) :: :ok
         def main(args) do
           :ok = run(__MODULE__, args)
         end
@@ -127,6 +142,8 @@ defmodule Mgmt.Commander do
 
   defmacro execute(do: block) do
     quote bind_quoted: [block: Macro.escape(block, unquote: true)] do
+      @spec run(args :: [String.t()], flags :: keyword) ::
+              :ok | {:error, message :: String.t(), code :: pos_integer}
       def run(_args, _flags) do
         unquote(block)
       end
@@ -135,6 +152,8 @@ defmodule Mgmt.Commander do
 
   defmacro execute({args, _, _}, do: block) do
     quote bind_quoted: [args: args, block: Macro.escape(block, unquote: true)] do
+      @spec run(args :: [String.t()], flags :: keyword) ::
+              :ok | {:error, message :: String.t(), code :: pos_integer}
       def run(var!(args), _flags) do
         unquote(block)
       end
@@ -143,12 +162,15 @@ defmodule Mgmt.Commander do
 
   defmacro execute({args, _, _}, {flags, _, _}, do: block) do
     quote bind_quoted: [args: args, flags: flags, block: Macro.escape(block, unquote: true)] do
+      @spec run(args :: [String.t()], flags :: keyword) ::
+              :ok | {:error, message :: String.t(), code :: pos_integer}
       def run(var!(args), var!(flags)) do
         unquote(block)
       end
     end
   end
 
+  @spec run(commander :: t, [String.t()]) :: :ok
   def run(commander, []) do
     struct = %__MODULE__{} = commander.struct
 
@@ -166,15 +188,15 @@ defmodule Mgmt.Commander do
 
     {command, args} =
       cond do
-        command == commander ->
-          {commander.struct.default_command, args}
+        opts[:help] ->
+          {Help, [command]}
 
         command == Help ->
           {command, _, _, _} = select_command(commander, args, [], [])
           {Help, [command]}
 
-        opts[:help] ->
-          {Help, [command]}
+        command == commander ->
+          {commander.struct.default_command, args}
 
         true ->
           {command, args}
@@ -185,9 +207,9 @@ defmodule Mgmt.Commander do
         :ok ->
           :ok
 
-        {:error, message} ->
+        {:error, message, code} ->
           IO.puts("error: " <> message)
-          exit({:shutdown, 1})
+          exit({:shutdown, code})
       end
     else
       IO.puts("error: command not found")

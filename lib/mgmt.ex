@@ -2,7 +2,7 @@ defmodule Mgmt do
   @moduledoc """
   Documentation for Mgmt.
   """
-  alias Mgmt.Commands.Hello
+  alias Mgmt.Commands.Off
   use Mgmt.Commander, [:main, :escript]
 
   usage("mgmt [command]")
@@ -12,5 +12,5 @@ defmodule Mgmt do
   powering off, suspending, locking, killing processes, and updating packages.
   """)
 
-  commands([Hello])
+  commands([Off])
 end
