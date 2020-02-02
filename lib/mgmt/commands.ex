@@ -1,4 +1,8 @@
 defmodule Mgmt.Commands do
+  @moduledoc """
+  Utility functions for all Mgmt commands.
+  """
+
   @spec run_any_that_exist(cmds :: [String.t()], opts :: keyword) :: boolean
   def run_any_that_exist(cmds, opts \\ [])
 

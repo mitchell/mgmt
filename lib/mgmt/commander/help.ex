@@ -1,6 +1,7 @@
 defmodule Mgmt.Commander.Help do
+  @moduledoc false
   alias Mgmt.Commander.Help.Template
-  use Mgmt.Commander
+  use Mgmt.Commander, [:help]
 
   usage("help [command subcommand ...]")
 

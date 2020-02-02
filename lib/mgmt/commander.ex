@@ -1,4 +1,7 @@
 defmodule Mgmt.Commander do
+  @moduledoc """
+  This module contains macros and functions to create new commands and run them.
+  """
   alias Mgmt.Commander.{CommanderError, Help}
 
   defstruct name: "",
@@ -33,6 +36,7 @@ defmodule Mgmt.Commander do
 
       @main Enum.member?(opts, :main)
       @escript Enum.member?(opts, :escript)
+      @help Enum.member?(opts, :help)
 
       if @main do
         @commander %Commander{
@@ -51,6 +55,8 @@ defmodule Mgmt.Commander do
 
   defmacro __before_compile__(_env) do
     quote do
+      alias Mgmt.Commander
+
       @spec struct() :: Commander.t()
       def struct do
         @commander
@@ -152,8 +158,14 @@ defmodule Mgmt.Commander do
 
   defmacro execute({args, _, _}, do: block) do
     quote bind_quoted: [args: args, block: Macro.escape(block, unquote: true)] do
-      @spec run(args :: [String.t()], flags :: keyword) ::
-              :ok | {:error, message :: String.t(), code :: pos_integer}
+      if @help do
+        @spec run(args :: [atom], flags :: keyword) ::
+                :ok | {:error, message :: String.t(), code :: pos_integer}
+      else
+        @spec run(args :: [String.t()], flags :: keyword) ::
+                :ok | {:error, message :: String.t(), code :: pos_integer}
+      end
+
       def run(var!(args), _flags) do
         unquote(block)
       end
@@ -170,7 +182,7 @@ defmodule Mgmt.Commander do
     end
   end
 
-  @spec run(commander :: t, [String.t()]) :: :ok
+  @spec run(commander :: module, [String.t()]) :: :ok
   def run(commander, []) do
     struct = %__MODULE__{} = commander.struct
 

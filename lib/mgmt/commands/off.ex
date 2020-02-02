@@ -1,4 +1,5 @@
 defmodule Mgmt.Commands.Off do
+  @moduledoc false
   import Mgmt.Commands
   use Mgmt.Commander
 
