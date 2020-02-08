@@ -8,6 +8,7 @@ defmodule Mgmt.MixProject do
       elixir: "~> 1.9",
       escript: escript(),
       deps: deps(),
+      preferred_cli_env: preferred_cli_env(),
       aliases: aliases()
     ]
   end
@@ -26,32 +27,30 @@ defmodule Mgmt.MixProject do
     ]
   end
 
-  defp aliases do
+  defp preferred_cli_env do
     [
-      build: ["clean", "lint", &test/1, "escript.build"],
-      clean: [&clean_bin/1, "clean"],
-      install: &install/1,
-      lint: ["compile", &lint/1]
+      credo: :dev,
+      dialyzer: :dev
     ]
   end
 
-  def clean_bin(_) do
+  defp aliases do
+    [
+      build: "escript.build",
+      clean: [&clean/1, "clean"],
+      install: &install/1,
+      lint: ["compile", "credo --strict", "dialyzer"]
+    ]
+  end
+
+  defp clean(_) do
     :ok = Mix.shell().info("Cleaning ./bin and ./_build")
     0 = Mix.shell().cmd("rm -rf ./bin/*")
   end
 
-  def install(_) do
+  defp install(_) do
     :ok = Mix.shell().info("Installing mgmt and mgmt_askpass to /usr/local/bin")
     0 = Mix.shell().cmd("cp ./bin/mgmt /usr/local/bin/")
     0 = Mix.shell().cmd("cp ./scripts/mgmt_askpass /usr/local/bin/")
-  end
-
-  def lint(_) do
-    0 = Mix.shell().cmd("mix credo --strict", env: [{"MIX_ENV", "dev"}])
-    0 = Mix.shell().cmd("mix dialyzer", env: [{"MIX_ENV", "dev"}])
-  end
-
-  def test(_) do
-    0 = Mix.shell().cmd("mix test")
   end
 end
